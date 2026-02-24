@@ -121,11 +121,11 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# IMPORTANTE: Como moviste la carpeta a 'gestion/static', 
-# borra o comenta estas líneas para que no busquen en la raíz vacía:
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+# AGREGA ESTO EXPLÍCITAMENTE:
+# Le decimos a Django: "Oye, busca también en la carpeta static que está dentro de gestion"
+STATICFILES_DIRS = [
+    BASE_DIR / "gestion" / "static",
+]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
