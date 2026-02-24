@@ -118,7 +118,9 @@ USE_TZ = True
 # ARCHIVOS ESTÁTICOS (CSS/JS)
 # ===================================================
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [ BASE_DIR / "static" ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # USAMOS "CompressedStaticFilesStorage" EN LUGAR DE "Manifest"
