@@ -123,9 +123,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # AGREGA ESTO EXPLÍCITAMENTE:
 # Le decimos a Django: "Oye, busca también en la carpeta static que está dentro de gestion"
-STATICFILES_DIRS = [
-    BASE_DIR / "gestion" / "static",
-]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
