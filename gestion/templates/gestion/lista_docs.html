@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Partes - Gestión Documental</title>
+
+    <link rel="icon" type="image/png" href="{% static 'gestion/img/logo_fpf.png' %}">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'gestion/css/style.css' %}">
+</head>
+<body class="bg-light">
+
+<div id="loader-container" class="d-none">
+    <div class="google-loader"></div>
+    <div class="overlay-bloqueo"></div>
+</div>
+
+<nav class="navbar sticky-top mb-4 bg-white shadow-sm border-bottom" style="z-index: 1020;">
+  <div class="container-fluid d-flex align-items-center justify-content-between px-3">
+    
+    <a class="navbar-brand d-flex align-items-center gap-2 trigger-loader" href="{% url 'home' %}">
+        <img src="{% static 'gestion/img/logo_fpf.png' %}" alt="FPF" style="height: 32px; width: auto;">
+        <span class="fw-bold text-secondary" style="font-size: 16px;">Gestión FPF</span>
+    </a>
+
+    <form action="{% url 'home' %}" method="GET" class="search-container d-none d-md-flex align-items-center mx-4 flex-grow-1 position-relative" id="search-form">
+        <span class="material-symbols-outlined text-secondary ms-2">search</span>
+        <input type="text" name="q" class="search-input" placeholder="Buscar expediente, remitente o asunto..." value="{{ busqueda|default:'' }}">
+        
+        {% if filtro_estado %}
+            <input type="hidden" name="estado" value="{{ filtro_estado }}">
+        {% endif %}
+
+        <div class="dropdown">
+            <span class="material-symbols-outlined text-secondary me-2 p-1 rounded-circle hover-bg-light" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Opciones de Orden y Filtro">
+                tune
+            </span>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="font-size: 13px;">
+                <li><h6 class="dropdown-header">Ordenar por fecha</h6></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="?q={{ busqueda }}&estado={{ filtro_estado|default:'' }}&orden=desc"><span class="material-symbols-outlined fs-6">arrow_downward</span> Más recientes</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="?q={{ busqueda }}&estado={{ filtro_estado|default:'' }}&orden=asc"><span class="material-symbols-outlined fs-6">arrow_upward</span> Más antiguos</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 trigger-loader" href="{% url 'home' %}"><span class="material-symbols-outlined fs-6">backspace</span> Limpiar filtros</a></li>
+            </ul>
+        </div>
+    </form>
+
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'dashboard' %}" class="btn btn-light border d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm trigger-loader text-decoration-none" title="Ir al Panel de Control">
+            <span class="material-symbols-outlined fs-6">grid_view</span>
+            <span class="d-none d-md-inline small fw-medium">Panel Admin</span>
+        </a>
+
+        <div class="dropdown">
+            <div class="user-avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" role="button" data-bs-toggle="dropdown" style="width: 35px; height: 35px; cursor: pointer;">
+                {{ user.username|make_list|first|upper }}
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                <li><h6 class="dropdown-header">Hola, {{ user.username|title }}</h6></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form action="{% url 'logout' %}" method="post" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6">logout</span> Cerrar sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid px-4 pb-5">
+    
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 mb-4 sticky-md-top" style="top: 80px; z-index: 10;">
+        <a href="{% url 'mesa_publica' %}" target="_blank" class="text-decoration-none">
+            <button class="btn-new shadow-sm">
+                <span class="material-symbols-outlined" style="color: #ea4335;">add</span>
+                <span class="fw-medium">Nuevo Trámite</span>
+            </button>
+        </a>
+
+        <div class="d-flex gap-2 overflow-auto py-2 px-1 flex-nowrap no-scrollbar">
+            <a href="?q={{ busqueda }}" class="btn-chip {% if not filtro_estado %}active{% endif %} trigger-loader">Todos</a>
+            <a href="?q={{ busqueda }}&estado=REC" class="btn-chip {% if filtro_estado == 'REC' %}active{% endif %} trigger-loader">Por Revisar</a>
+            <a href="?q={{ busqueda }}&estado=REV" class="btn-chip {% if filtro_estado == 'REV' %}active{% endif %} trigger-loader">En Revisión</a>
+            <a href="?q={{ busqueda }}&estado=DER" class="btn-chip {% if filtro_estado == 'DER' %}active{% endif %} trigger-loader">En Gestión</a>
+            <a href="?q={{ busqueda }}&estado=OBS" class="btn-chip {% if filtro_estado == 'OBS' %}active{% endif %} trigger-loader">Observados</a>
+            <a href="?q={{ busqueda }}&estado=FIN" class="btn-chip {% if filtro_estado == 'FIN' %}active{% endif %} trigger-loader">Finalizados</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% for doc in documentos %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <div class="card-drive hover-card h-100 shadow-sm border-0">
+                <div class="card-preview bg-light d-flex align-items-center justify-content-center">
+                    {% if '.jpg' in doc.archivo.url or '.png' in doc.archivo.url or '.jpeg' in doc.archivo.url %}
+                        <img src="{{ doc.archivo.url }}" alt="Vista previa">
+                    {% elif '.pdf' in doc.archivo.url %}
+                        <span class="material-symbols-outlined text-danger opacity-75" style="font-size: 64px;">picture_as_pdf</span>
+                    {% else %}
+                        <span class="material-symbols-outlined text-primary opacity-75" style="font-size: 64px;">description</span>
+                    {% endif %}
+                </div>
+
+                <div class="p-3 d-flex flex-column justify-content-between bg-white border border-top-0" style="border-radius: 0 0 12px 12px; min-height: 150px;">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-light text-dark border font-monospace text-truncate" style="font-size: 10px; max-width: 90px;" title="{{ doc.numero_expediente }}">
+                                {{ doc.numero_expediente }}
+                            </span>
+
+                            <div class="d-flex gap-1 bring-to-front">
+                                <a href="{% url 'generar_cargo' doc.id %}" target="_blank" 
+                                   class="text-secondary text-decoration-none p-1 rounded-circle hover-bg-light" 
+                                   title="Imprimir Cargo"
+                                   onclick="event.stopPropagation()">
+                                    <span class="material-symbols-outlined fs-6">print</span>
+                                </a>
+
+                                <div class="dropdown">
+                                    <span class="material-symbols-outlined text-secondary fs-6 p-1 rounded-circle hover-bg-light" 
+                                          role="button" 
+                                          data-bs-toggle="dropdown" 
+                                          style="cursor: pointer;"
+                                          onclick="event.stopPropagation()">
+                                        more_vert
+                                    </span>
+                                    
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="font-size: 13px;">
+                                        <li><h6 class="dropdown-header">Gestionar Expediente</h6></li>
+                                        <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="{% url 'cambiar_estado' doc.id 'REV' %}"><span class="material-symbols-outlined fs-6 text-info">visibility</span> Poner en Revisión</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="{% url 'cambiar_estado' doc.id 'DER' %}"><span class="material-symbols-outlined fs-6 text-primary">forward</span> Derivar a Área</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="{% url 'cambiar_estado' doc.id 'OBS' %}"><span class="material-symbols-outlined fs-6 text-danger">error</span> Observar Trámite</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item d-flex align-items-center gap-2 trigger-loader" href="{% url 'cambiar_estado' doc.id 'FIN' %}"><span class="material-symbols-outlined fs-6 text-success">task_alt</span> Finalizar Trámite</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ doc.asunto }}" style="font-size: 13px;">{{ doc.asunto }}</h6>
+                        <p class="text-secondary mb-2 text-truncate small" style="font-size: 11px;"><span class="fw-medium">De:</span> {{ doc.remitente }}</p>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top border-light">
+                        {% if doc.estado == 'REC' %}
+                            <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 px-2 py-1" style="font-size: 10px;">Por Revisar</span>
+                        {% elif doc.estado == 'REV' %}
+                            <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 px-2 py-1" style="font-size: 10px;">En Revisión</span>
+                        {% elif doc.estado == 'DER' %}
+                            <span class="badge rounded-pill bg-info bg-opacity-10 text-info-emphasis border border-info border-opacity-25 px-2 py-1" style="font-size: 10px;">En Gestión</span>
+                        {% elif doc.estado == 'OBS' %}
+                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1" style="font-size: 10px;">Observado</span>
+                        {% elif doc.estado == 'FIN' %}
+                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1" style="font-size: 10px;">Finalizado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ doc.get_estado_display }}</span>
+                        {% endif %}
+                        <small class="text-muted" style="font-size: 10px;">{{ doc.creado_el|date:"d M" }}</small>
+                    </div>
+                </div>
+                
+                <a href="{{ doc.archivo.url }}" target="_blank" class="stretched-link"></a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 mt-4">
+            <div class="mb-3 opacity-25"><span class="material-symbols-outlined" style="font-size: 6rem;">inbox</span></div>
+            <h5 class="text-secondary fw-normal">No se encontraron expedientes</h5>
+            <p class="text-muted small">Intenta ajustar los filtros o agrega un nuevo trámite.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    window.addEventListener('pageshow', function(event) {
+        var loader = document.getElementById('loader-container');
+        if (loader) { loader.classList.add('d-none'); }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var loader = document.getElementById('loader-container');
+        var searchForm = document.getElementById('search-form');
+
+        var links = document.querySelectorAll('.trigger-loader');
+        links.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                if (link.target !== '_blank' && !e.ctrlKey && !e.metaKey) {
+                    loader.classList.remove('d-none');
+                }
+            });
+        });
+
+        if (searchForm) {
+            searchForm.addEventListener('submit', function() { loader.classList.remove('d-none'); });
+        }
+
+        var logoutForm = document.querySelector('.logout-form');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', function() { loader.classList.remove('d-none'); });
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cargo - {{ doc.numero_expediente }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm; /* Margen limpio alrededor */
+            @frame footer_frame {           /* Frame para el pie de página fijo */
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            color: #333;
+            background-image: url('{% static "gestion/img/watermark_fpf.png" %}');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 40%;
+        }
+
+        /* TABLAS DE ESTRUCTURA (Vital para que no se rompa) */
+        table { width: 100%; border-collapse: collapse; }
+        td { vertical-align: top; padding: 5px; }
+
+        /* HEADER */
+        .header-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #ce1126; /* Rojo FPF */
+            text-transform: uppercase;
+        }
+        .header-sub {
+            font-size: 10pt;
+            color: #555;
+            margin-top: 5px;
+        }
+        .header-line {
+            border-bottom: 3px solid #ce1126;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* CAJA DESTACADA DEL EXPEDIENTE */
+        .highlight-box {
+            background-color: #f8f9fa; /* Gris muy suave */
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px; /* Bordes redondeados sutiles */
+        }
+        .exp-title { font-size: 9pt; color: #ce1126; text-transform: uppercase; font-weight: bold; }
+        .exp-val { font-size: 16pt; color: #000; font-weight: bold; margin-top: 5px; }
+
+        /* LISTA DE DATOS */
+        .info-row td {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee; /* Línea separadora sutil */
+        }
+        .label {
+            color: #888;
+            font-size: 8pt;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .value {
+            color: #222;
+            font-size: 11pt;
+            font-weight: normal;
+        }
+
+        /* SELLO DIGITAL */
+        .stamp-container {
+            border: 2px solid #ce1126;
+            color: #ce1126;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 10pt;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <table>
+        <tr>
+            <td width="20%" align="left">
+                {% if logo_url %}
+                    <img src="{{ logo_url }}" width="80">
+                {% else %}
+                    <h1 style="color:#ce1126; margin:0;">FPF</h1>
+                {% endif %}
+            </td>
+            <td width="80%" align="right" style="vertical-align: middle;">
+                <div class="header-title">Cargo de Recepción</div>
+                <div class="header-sub">Mesa de Partes Virtual - FPF Ucayali</div>
+            </td>
+        </tr>
+    </table>
+    
+    <div class="header-line"></div>
+
+    <div class="highlight-box">
+        <table>
+            <tr>
+                <td width="60%">
+                    <div class="exp-title">N° de Expediente Generado</div>
+                    <div class="exp-val">{{ doc.numero_expediente }}</div>
+                </td>
+                <td width="40%" align="right">
+                    <div class="exp-title" style="text-align: right; color: #555;">Fecha de Registro</div>
+                    <div style="font-size: 12pt; margin-top: 5px; text-align: right;">
+                        {{ doc.creado_el|date:"d/m/Y" }} <span style="color:#ccc;">|</span> {{ doc.creado_el|date:"H:i" }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <br><br>
+
+    <table cellspacing="0" cellpadding="0">
+        <tr class="info-row">
+            <td width="50%">
+                <span class="label">Remitente / Institución</span>
+                <div class="value">{{ doc.remitente }}</div>
+            </td>
+            <td width="50%">
+                <span class="label">Identificación (DNI / RUC)</span>
+                <div class="value">{{ doc.dni_ruc }}</div>
+            </td>
+        </tr>
+        <tr class="info-row">
+            <td>
+                <span class="label">Correo Electrónico</span>
+                <div class="value">{{ doc.email }}</div>
+            </td>
+            <td>
+                <span class="label">Tipo de Documento</span>
+                <div class="value">{{ doc.get_tipo_documento_display }}</div>
+            </td>
+        </tr>
+        <tr class="info-row">
+            <td colspan="2">
+                <span class="label">Asunto / Sumilla</span>
+                <div class="value" style="line-height: 1.4;">{{ doc.asunto }}</div>
+            </td>
+        </tr>
+        <tr class="info-row">
+            <td colspan="2" style="border-bottom: none;"> <span class="label">Archivo Adjunto</span>
+                <div class="value">
+                    <img src="{% static 'gestion/img/pdf_icon.png' %}" width="10" style="vertical-align: middle;"> {{ doc.archivo.name }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br><br><br>
+
+    <table>
+        <tr>
+            <td width="60%" style="padding-right: 20px;">
+                <div class="stamp-container">
+                    <div style="font-size: 14pt; margin-bottom: 5px;">&#10003; RECIBIDO CONFORME</div>
+                    <div style="font-size: 8pt; font-weight: normal; color: #ce1126;">SISTEMA DE GESTIÓN DOCUMENTAL</div>
+                    <div style="font-size: 8pt; margin-top: 5px; color: #333;">{{ doc.creado_el|date:"d/m/Y H:i:s" }}</div>
+                </div>
+                <div style="font-size: 7pt; color: #777; margin-top: 10px; text-align: justify;">
+                    Este documento ha sido emitido automáticamente por la plataforma digital de la FPF - Liga Departamental de Ucayali. No requiere firma manuscrita y tiene validez para el seguimiento de su trámite administrativo.
+                </div>
+            </td>
+            <td width="40%" align="center">
+                {% if qr_code %}
+                    <img src="data:image/png;base64,{{ qr_code }}" width="110" style="border: 1px solid #ddd; padding: 5px;">
+                {% endif %}
+                <div style="font-size: 7pt; color: #999; margin-top: 5px;">CÓDIGO DE VERIFICACIÓN</div>
+            </td>
+        </tr>
+    </table>
+
+    <div id="footerContent" style="text-align: center; color: #999; font-size: 7pt; border-top: 1px solid #eee; padding-top: 5px;">
+        Federación Peruana de Fútbol - Jr. Inmaculada 499, Pucallpa - Ucayali &bull; Generado el {% now "d/m/Y H:i" %}
+    </div>
+
+</body>
+</html>

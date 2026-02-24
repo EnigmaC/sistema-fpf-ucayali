@@ -1,0 +1,22 @@
+# --- SEGURIDAD (¡NO SUBIR NUNCA!) ---
+.env
+db.sqlite3
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Entornos Virtuales ---
+venv/
+env/
+.venv/
+
+# --- Archivos Estáticos (Generados por collectstatic) ---
+staticfiles/
+assets/
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db

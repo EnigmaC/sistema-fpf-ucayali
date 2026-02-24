@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Partes Virtual - FPF Ucayali</title>
+    
+    <link rel="icon" type="image/png" href="{% static 'gestion/img/logo_fpf.png' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'gestion/css/style.css' %}">
+
+    <style>
+        .public-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            width: 100%;
+            max-width: 750px;
+            margin: 2rem auto;
+            position: relative;
+        }
+        .btn-fpf {
+            background-color: #ce1126;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-fpf:hover {
+            background-color: #a30d1e;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* --- 2. ESTILOS DE LA BARRA DE CARGA (TIPO GOOGLE) --- */
+        .google-loader {
+            height: 4px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            background-color: #fce8e6;
+            z-index: 1000;
+        }
+        .google-loader::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: -200px;
+            width: 200px;
+            height: 100%;
+            background-color: #ce1126;
+            animation: loading 2s linear infinite;
+        }
+        @keyframes loading {
+            0% { left: -200px; width: 30%; }
+            50% { width: 30%; }
+            70% { width: 70%; }
+            80% { left: 50%; }
+            95% { left: 120%; }
+            100% { left: 100%; }
+        }
+        /* Capa blanca semitransparente para bloquear clics */
+        .overlay-bloqueo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="login-body d-flex align-items-center min-vh-100 py-4">
+
+    <div class="container d-flex justify-content-center">
+        
+        <div class="public-card">
+            <div class="card-header-strip"></div>
+
+            <div id="loader-container" class="d-none">
+                <div class="google-loader"></div>
+                <div class="overlay-bloqueo"></div>
+            </div>
+
+            <div class="p-4 p-md-5">
+                
+                <div class="text-center mb-4">
+                    <img src="{% static 'gestion/img/logo_fpf.png' %}" alt="Logo FPF" style="width: 80px; height: auto;" class="mb-3">
+                    <h4 class="fw-bold text-dark mb-1">Mesa de Partes Virtual</h4>
+                    <p class="text-secondary small">Federación Peruana de Fútbol - Departamental Ucayali</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="text-start" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger p-2 mb-4 small shadow-sm border-0 d-flex align-items-center gap-2" style="background-color: #fce8e6; color: #c5221f;">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Atención:</strong> Por favor revise los campos marcados en rojo.
+                            </div>
+                        </div>
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger small">{{ form.non_field_errors }}</div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Remitente <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   name="remitente" 
+                                   class="form-control bg-light border-0 p-2" 
+                                   placeholder="Nombre del Club o Persona"
+                                   value="{{ form.remitente.value|default_if_none:'' }}" 
+                                   required> 
+                            {% if form.remitente.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.remitente.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium small text-uppercase text-muted">DNI o RUC <span class="text-danger">*</span></label>
+                            
+                            <input type="text" 
+                                   name="dni_ruc" 
+                                   class="form-control bg-light border-0 p-2"
+                                   placeholder="DNI (8) o RUC (11)"
+                                   value="{{ form.dni_ruc.value|default_if_none:'' }}"
+                                   maxlength="11"
+                                   inputmode="numeric"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                   required>
+                            {% if form.dni_ruc.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.dni_ruc.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Tipo Documento <span class="text-danger">*</span></label>
+                            {{ form.tipo_documento }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Correo Electrónico <span class="text-danger">*</span></label>
+                            <input type="email" 
+                                   name="email" 
+                                   class="form-control bg-light border-0 p-2"
+                                   placeholder="ejemplo@correo.com"
+                                   value="{{ form.email.value|default_if_none:'' }}"
+                                   required>
+                            {% if form.email.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.email.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Confirmar Correo <span class="text-danger">*</span></label>
+                            <input type="email" 
+                                   name="email_confirmacion" 
+                                   class="form-control bg-light border-0 p-2"
+                                   placeholder="Repita su correo"
+                                   value="{{ form.email_confirmacion.value|default_if_none:'' }}"
+                                   required
+                                   onpaste="return false;" title="Por seguridad, debe escribir el correo manualmente.">
+                            {% if form.email_confirmacion.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.email_confirmacion.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Asunto <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   name="asunto" 
+                                   class="form-control bg-light border-0 p-2"
+                                   placeholder="Ej: Solicitud de inscripción"
+                                   value="{{ form.asunto.value|default_if_none:'' }}"
+                                   required>
+                            {% if form.asunto.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.asunto.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium small text-uppercase text-muted">Documento (PDF/IMG) <span class="text-danger">*</span></label>
+                            <input type="file" 
+                                   name="archivo" 
+                                   class="form-control"
+                                   accept=".pdf, .jpg, .jpeg, .png"
+                                   required>
+                            <div class="form-text small opacity-75">Máximo 10MB. Formatos: PDF, JPG, PNG.</div>
+                            {% if form.archivo.errors %} 
+                                <div class="text-danger small fw-bold mt-1">
+                                    <i class="bi bi-x-circle"></i> {{ form.archivo.errors.0 }}
+                                </div> 
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-fpf w-100 shadow-sm rounded-3">
+                                INGRESAR TRÁMITE
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-4 border-top text-center">
+                    <p class="text-muted small mb-2">
+                        ¿Ya ingresaste una solicitud?
+                    </p>
+                    <a href="{% url 'consultar_tramite' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4 mb-3 fw-bold">
+                        <i class="bi bi-search"></i> Consultar estado de trámite
+                    </a>
+                    <p class="text-muted small mb-2">
+                        ¿Eres personal administrativo?
+                    </p>
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4" style="font-size: 12px;">
+                        Iniciar Sesión
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Estilos para Selects
+            var selects = document.querySelectorAll('select');
+            selects.forEach(function(select) {
+                select.classList.add('form-select', 'bg-light', 'border-0', 'p-2');
+            });
+
+            // Lógica de Barra de Carga
+            var form = document.querySelector('form');
+            var loader = document.getElementById('loader-container');
+            var btnSubmit = document.querySelector('button[type="submit"]');
+
+            form.addEventListener('submit', function(event) {
+                // Solo activamos si el navegador dice que los campos requeridos están llenos
+                if (form.checkValidity()) {
+                    loader.classList.remove('d-none');
+                    btnSubmit.classList.add('disabled');
+                    btnSubmit.innerHTML = 'Enviando...';
+                }
+                // Si el formulario no es válido, el navegador mostrará sus propias alertas o nuestros estilos rojos al recargar
+            });
+        });
+    </script>
+
+</body>
+</html>

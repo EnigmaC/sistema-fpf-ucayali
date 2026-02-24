@@ -1,0 +1,341 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - FPF</title>
+
+    <link rel="icon" type="image/png" href="{% static 'gestion/img/logo_fpf.png' %}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'gestion/css/style.css' %}">
+    
+    <style>
+        /* --- NAVBAR STICKY (FIJO ARRIBA) --- */
+        .fpf-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background-color: white;
+            transition: box-shadow 0.3s ease;
+        }
+        .fpf-navbar.scrolled {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+
+        /* --- BARRA DE CARGA TIPO GOOGLE --- */
+        .google-loader {
+            height: 4px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            background-color: #fce8e6;
+            z-index: 2000;
+        }
+        .google-loader::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: -200px;
+            width: 200px;
+            height: 100%;
+            background-color: #ce1126;
+            animation: loading 2s linear infinite;
+        }
+        @keyframes loading {
+            0% { left: -200px; width: 30%; }
+            50% { width: 30%; }
+            70% { width: 70%; }
+            80% { left: 50%; }
+            95% { left: 120%; }
+            100% { left: 100%; }
+        }
+        .overlay-bloqueo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            z-index: 1999;
+        }
+
+        /* Estilos de Tarjetas */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e0e0e0;
+            height: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #ce1126;
+        }
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .bg-red-light { background-color: #fce8e6; color: #ce1126; }
+        .bg-blue-light { background-color: #e8f0fe; color: #1a73e8; }
+        .bg-green-light { background-color: #e6f4ea; color: #137333; }
+        .bg-orange-light { background-color: #fef7e0; color: #b06000; }
+    </style>
+</head>
+<body class="fpf-layout bg-light">
+
+    <div id="loader-container" class="d-none">
+        <div class="google-loader"></div>
+        <div class="overlay-bloqueo"></div>
+    </div>
+
+    <nav class="navbar fpf-navbar border-bottom shadow-sm py-2">
+        <div class="container-fluid d-flex align-items-center justify-content-between px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{% static 'gestion/img/logo_fpf.png' %}" alt="FPF" style="height: 38px; width: auto;">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark" style="font-size: 16px; line-height: 1;">Panel de Control</span>
+                    <span class="text-muted small" style="font-size: 11px;">Administración</span>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-secondary small d-none d-md-block">
+                    Bienvenido/a, <span class="fw-bold" style="color: #ce1126;">{{ user.username|title }}</span>
+                </span>
+                
+                <div class="dropdown">
+                    <div class="user-avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" 
+                         style="width: 35px; height: 35px; cursor: pointer;" 
+                         role="button" data-bs-toggle="dropdown">
+                        {{ user.username|make_list|first|upper }}
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" class="logout-form">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined fs-6">logout</span> Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold text-dark mb-0">Resumen General</h4>
+                <p class="text-muted small mb-0">Vista rápida de la gestión documental</p>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <a href="{% url 'home' %}" class="btn btn-light border d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm trigger-loader">
+                    <span class="material-symbols-outlined fs-6">list</span>
+                    Ver Lista Completa
+                </a>
+                <a href="{% url 'mesa_publica' %}" target="_blank" class="btn btn-danger d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm">
+                    <span class="material-symbols-outlined fs-6">add</span>
+                    Nuevo Trámite
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <a href="{% url 'home' %}" class="text-decoration-none trigger-loader">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-secondary fw-bold text-uppercase mb-1" style="font-size: 11px; letter-spacing: 1px;">Total Documentos</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total }}</h2>
+                            </div>
+                            <div class="icon-box bg-blue-light">
+                                <span class="material-symbols-outlined">folder</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <a href="{% url 'home' %}?estado=REC" class="text-decoration-none trigger-loader">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-secondary fw-bold text-uppercase mb-1" style="font-size: 11px; letter-spacing: 1px;">Por Revisar</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ recibidos }}</h2>
+                            </div>
+                            <div class="icon-box bg-orange-light">
+                                <span class="material-symbols-outlined">inbox</span> 
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <a href="{% url 'home' %}?estado=DER" class="text-decoration-none trigger-loader">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-secondary fw-bold text-uppercase mb-1" style="font-size: 11px; letter-spacing: 1px;">En Gestión</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ derivados }}</h2>
+                            </div>
+                            <div class="icon-box bg-red-light">
+                                <span class="material-symbols-outlined">forward</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <a href="{% url 'home' %}?estado=FIN" class="text-decoration-none trigger-loader">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-secondary fw-bold text-uppercase mb-1" style="font-size: 11px; letter-spacing: 1px;">Finalizados</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ finalizados }}</h2>
+                            </div>
+                            <div class="icon-box bg-green-light">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h6 class="fw-bold m-0 text-dark d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary fs-5">schedule</span> Últimos Ingresos
+                </h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+                            <th class="px-4 py-3 text-secondary border-0">Expediente</th>
+                            <th class="text-secondary border-0">Remitente</th>
+                            <th class="text-secondary border-0">Asunto</th>
+                            <th class="text-secondary border-0">Estado</th>
+                            <th class="text-secondary border-0 text-end px-4">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in recientes %}
+                        <tr>
+                            <td class="px-4 fw-bold text-primary">{{ doc.numero_expediente }}</td>
+                            <td class="fw-medium">{{ doc.remitente }}</td>
+                            <td class="text-truncate text-muted small" style="max-width: 250px;">{{ doc.asunto }}</td>
+                            <td>
+                                {% if doc.estado == 'REC' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2">Recibido</span>
+                                {% elif doc.estado == 'DER' %}
+                                    <span class="badge bg-info bg-opacity-10 text-info-emphasis border border-info border-opacity-25 rounded-pill px-2">Derivado</span>
+                                {% elif doc.estado == 'REV' %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 rounded-pill px-2">En Revisión</span>
+                                {% elif doc.estado == 'OBS' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2">Observado</span>
+                                {% elif doc.estado == 'FIN' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2">Finalizado</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end px-4">
+                                {% if doc.archivo %}
+                                    <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-sm btn-light rounded-circle border shadow-sm" title="Ver archivo">
+                                        <span class="material-symbols-outlined fs-6 pt-1 text-dark">visibility</span>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted opacity-50">
+                                    <span class="material-symbols-outlined fs-1">inbox</span>
+                                    <p class="mb-0 small">No hay documentos recientes</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white text-center py-3 border-0">
+                <a href="{% url 'home' %}" class="text-decoration-none fw-bold text-danger small hover-underline trigger-loader">
+                    VER TODOS LOS TRÁMITES &rarr;
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 1. Sombra dinámica para el Navbar al hacer scroll
+        window.addEventListener('scroll', function() {
+            var navbar = document.querySelector('.fpf-navbar');
+            if (window.scrollY > 10) {
+                navbar.classList.add('scrolled'); 
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 2. FIX: Evita el bucle de carga al presionar "Atrás"
+        window.addEventListener('pageshow', function(event) {
+            var loader = document.getElementById('loader-container');
+            if (loader) {
+                loader.classList.add('d-none');
+            }
+        });
+
+        // 3. Activar Loader
+        document.addEventListener("DOMContentLoaded", function() {
+            var loader = document.getElementById('loader-container');
+
+            // Enlaces con clase trigger-loader
+            var links = document.querySelectorAll('.trigger-loader');
+            links.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    if (link.target !== '_blank' && !e.ctrlKey && !e.metaKey) {
+                        loader.classList.remove('d-none');
+                    }
+                });
+            });
+
+            // Cerrar sesión
+            var logoutForm = document.querySelector('.logout-form');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', function() {
+                    loader.classList.remove('d-none');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
