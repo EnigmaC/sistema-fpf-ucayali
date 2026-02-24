@@ -117,15 +117,16 @@ USE_TZ = True
 # ===================================================
 # ARCHIVOS ESTÁTICOS (CSS/JS)
 # ===================================================
+# settings.py
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'gestion', 'static'),
-]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# USAMOS "CompressedStaticFilesStorage" EN LUGAR DE "Manifest"
-# El "Manifest" es muy estricto y si falta un archivo .map o una imagen, rompe el deploy.
-# Este es más seguro para empezar.
+# IMPORTANTE: Como moviste la carpeta a 'gestion/static', 
+# borra o comenta estas líneas para que no busquen en la raíz vacía:
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 
