@@ -3,7 +3,7 @@ set -o errexit
 
 pip install -r requirements.txt
 
-# Cambia --no-input por --verbosity 2 para ver el detalle completo
-python manage.py collectstatic --no-input --verbosity 2
+# --clear fuerza borrar y recopiar todo desde cero
+python manage.py collectstatic --no-input --clear
 
 python manage.py migrate

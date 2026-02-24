@@ -34,15 +34,15 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,*').split(',')
 # APLICACIONES
 # ===================================================
 INSTALLED_APPS = [
-    'jazzmin',                  # Panel Admin (Diseño)
-    'cloudinary_storage',       # Adaptador Cloudinary
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'cloudinary',               # SDK Cloudinary
+    'django.contrib.staticfiles',  # ← primero staticfiles
+    'cloudinary',
+    'cloudinary_storage',          # ← cloudinary después
     'gestion',                  # Tu App
 ]
 
